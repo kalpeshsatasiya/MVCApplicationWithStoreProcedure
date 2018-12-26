@@ -1,0 +1,141 @@
+﻿@model IEnumerable<PersonManagement.Models.Person>
+
+@{
+    ViewBag.Title = "Person";
+}
+
+<style>
+    .errorClass {
+        border: 1px solid red;
+    }
+</style>
+<h2>Person Search</h2>
+
+<div class="row">
+    <div class="col-md-1">Name</div>
+    <div class="col-md-2"><input type="text" value="@ViewBag.Name" id="name" class="form-control" /></div>
+    <div class="col-md-1"><input type="button" class="btn btn-primary" value="Search" onclick="searchPerson()" /></div>
+    <div class="col-md-1"><input type="button" class="btn btn-default" value="Clear" onclick="clearSearch()" /></div>
+</div>
+<br />
+<p>
+    <a href="javacript:void(0);" onclick="addEditPerson(0)">Create New</a>
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayName("First Name")
+        </th>
+        <th>
+            @Html.DisplayName("Last Name")
+        </th>
+        <th>
+            @Html.DisplayName("Gender")
+        </th>
+        <th>
+            @Html.DisplayName("State")
+        </th>
+        <th>
+            @Html.DisplayName("DOB")
+        </th>
+        <th>Action</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.First_Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Last_Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Gender)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.State_Code)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Dob)
+            </td>
+            <td>
+                <a href="javacript:void(0);" onclick="addEditPerson(@item.Person_Id)">Edit</a>
+            </td>
+        </tr>
+    }
+
+</table>
+
+<div id="addEditPerson" class="modal">
+</div>
+
+<script>
+    function searchPerson() {
+        var name = $("#name").val();
+        if (name != undefined && name != "" && name != null) {
+            window.location.href = '@Url.Action("Index", "Person")' +"?name=" + name;
+        }
+    }
+    function clearSearch() {
+        window.location.href = '@Url.Action("Index", "Person")';
+    }
+    function addEditPerson(id) {
+        $.ajax({
+            url: "/person/AddEdit/"+ id,
+            type: "get",
+            dataType: "html",
+            cache: false,
+            success: function (data) {
+                $("#addEditPerson").html(data);
+                $("#addEditPerson").modal();
+            },
+            error: function (xhr, status, error) {
+            }
+        });
+    }
+
+    function savePerson() {
+        if ($("#First_Name").val() == "" || $("#First_Name").val() == null) {
+            $("#First_Name").addClass("errorClass");
+            return false;
+        }
+        if ($("#Last_Name").val() == "" || $("#Last_Name").val() == null) {
+            $("#Last_Name").addClass("errorClass");
+            return false;
+        }
+        if ($("#Gender").val() == "" || $("#Gender").val() == null) {
+            $("#Gender").addClass("errorClass");
+            return false;
+        }
+        if ($("#State_Id").val() == "" || $("#State_Id").val() == null) {
+            $("#State_Id").addClass("errorClass");
+            return false;
+        }
+        if ($("#Dob").val() == "" || $("#Dob").val() == null) {
+            $("#Dob").addClass("errorClass");
+            return false;
+        }
+        var id = $("#Person_Id").val();
+        $.ajax({
+            url: "/person/AddEdit/" + id,
+            type: "POST",
+            data: { person_Id : $("#Person_Id").val(), first_name: $("#First_Name").val(), last_name : $("#Last_Name").val(), gender : $("#Gender").val(), state_Id : $("#State_Id").val(), dob: $("#Dob").val() },
+            success: function (data) {
+                console.log(data);
+                if (data != null) {
+                    var result = data;
+                    if (!result.isSuccess) {
+                        alert(result.App_msg);
+                    }
+                    else {
+                        alert(result.App_msg);
+                        window.location.href = '@Url.Action("Index", "Person")';
+                    }
+                }
+            },
+            error: function (xhr, status, error) {
+            }
+        });
+    }
+</script>
